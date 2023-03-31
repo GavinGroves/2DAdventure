@@ -21,15 +21,17 @@ public class PlayerController : MonoBehaviour
     private float walkSpeed => speed / 2.5f; //每次调用都执行 =>后面 
     private float jumpForce = 16.5f;
     private float hurtForce = 8; // 伤害的力
+    private Vector2 originalOffset;
+    private Vector2 originalSize;
+    [Header("物理材质")]
+    public PhysicsMaterial2D normal;
+    public PhysicsMaterial2D wall;
 
     [Header("状态")]
     public bool isCrouch; // 下蹲判定 是否为下蹲状态
     public bool isHurt; // 是否正在被伤害
     public bool isDead;
     public bool isAttack; //攻击判定
-
-    private Vector2 originalOffset;
-    private Vector2 originalSize;
 
     private void Awake()
     {
@@ -80,6 +82,8 @@ public class PlayerController : MonoBehaviour
     {
         // 持续获取按键(手柄)输入的数值
         inputDirection = inputControl.Gmaeplay.Move.ReadValue<Vector2>();
+
+        CheckState();
     }
 
     private void FixedUpdate()
@@ -161,4 +165,14 @@ public class PlayerController : MonoBehaviour
         inputControl.Gmaeplay.Disable();
     }
     #endregion
+
+    /// <summary>
+    /// 检测状态更换材质
+    /// </summary>
+    private void CheckState()
+    {
+        // 在地上为TRUE → normal
+        coll.sharedMaterial = physicsCheck.isGround ? normal : wall;
+    }
+
 }
