@@ -7,21 +7,28 @@ public class PlayerController : MonoBehaviour
 {
     public PlayerInputControl inputControl;
     private PhysicsCheck physicsCheck;
+    private PlayerManager playerManager;
+    private PlayerAnimation playerAnimation;
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private CapsuleCollider2D coll;
 
-    private Vector2 inputDirection;
+    private Vector2 inputDirection; //存放获取的移动位置(x,y)
     private float jumpForce = 16.5f;
     private float speed = 300f;
     private float runSpeed; // 用于暂时存放speed
     private float walkSpeed => speed / 2.5f; //每次调用都执行 =>后面 
-    // 下蹲判定 是否为下蹲状态
-    private bool isCrouch;
+    private bool isCrouch; // 下蹲判定 是否为下蹲状态
     public bool IsCrouch
     {
         get { return isCrouch; }
+    }
+    private bool isAttack; //攻击判定
+    public bool IsAttack
+    {
+        get { return isAttack; }
+        set { isAttack = value; }
     }
     private Vector2 originalOffset;
     private Vector2 originalSize;
@@ -37,7 +44,10 @@ public class PlayerController : MonoBehaviour
 
         inputControl = new PlayerInputControl();
         physicsCheck = GetComponent<PhysicsCheck>();
+        playerManager = GetComponent<PlayerManager>();
+        playerAnimation = GetComponent<PlayerAnimation>();
 
+        // 跳跃
         inputControl.Gmaeplay.Jump.started += Jump;
 
         #region 强制走路
@@ -54,6 +64,9 @@ public class PlayerController : MonoBehaviour
                 speed = runSpeed;
         };
         #endregion
+
+        // 攻击
+        inputControl.Gmaeplay.Attack.started += PlayerAttack;
     }
 
     private void OnEnable()
@@ -74,7 +87,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move();
+        if (!playerManager.IsHurt)
+            Move();
     }
 
     private void Move()
@@ -114,4 +128,14 @@ public class PlayerController : MonoBehaviour
         if (physicsCheck.isGround)
             rb.AddForce(transform.up * jumpForce, ForceMode2D.Impulse);
     }
+
+    /// <summary>
+    /// 攻击
+    /// </summary>
+    private void PlayerAttack(InputAction.CallbackContext obj)
+    {
+        playerAnimation.PlayAttack();
+        isAttack = true;
+    }
+
 }
