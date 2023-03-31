@@ -7,29 +7,27 @@ public class PlayerController : MonoBehaviour
 {
     public PlayerInputControl inputControl;
     private PhysicsCheck physicsCheck;
-    private PlayerManager playerManager;
     private PlayerAnimation playerAnimation;
+    private Character character;
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private CapsuleCollider2D coll;
 
     private Vector2 inputDirection; //存放获取的移动位置(x,y)
-    private float jumpForce = 16.5f;
-    private float speed = 300f;
+    [Header("基本参数")]
+    private float speed = 290f;
     private float runSpeed; // 用于暂时存放speed
     private float walkSpeed => speed / 2.5f; //每次调用都执行 =>后面 
-    private bool isCrouch; // 下蹲判定 是否为下蹲状态
-    public bool IsCrouch
-    {
-        get { return isCrouch; }
-    }
-    private bool isAttack; //攻击判定
-    public bool IsAttack
-    {
-        get { return isAttack; }
-        set { isAttack = value; }
-    }
+    private float jumpForce = 16.5f;
+    private float hurtForce = 8; // 伤害的力
+
+    [Header("状态")]
+    public bool isCrouch; // 下蹲判定 是否为下蹲状态
+    public bool isHurt; // 是否正在被伤害
+    public bool isDead;
+    public bool isAttack; //攻击判定
+
     private Vector2 originalOffset;
     private Vector2 originalSize;
 
@@ -37,15 +35,14 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
-
         coll = GetComponent<CapsuleCollider2D>();
         originalOffset = coll.offset;
         originalSize = coll.size;
 
         inputControl = new PlayerInputControl();
         physicsCheck = GetComponent<PhysicsCheck>();
-        playerManager = GetComponent<PlayerManager>();
         playerAnimation = GetComponent<PlayerAnimation>();
+        character = GetComponent<Character>();
 
         // 跳跃
         inputControl.Gmaeplay.Jump.started += Jump;
@@ -87,7 +84,7 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!playerManager.IsHurt)
+        if (!isHurt && !isAttack)
             Move();
     }
 
@@ -138,4 +135,30 @@ public class PlayerController : MonoBehaviour
         isAttack = true;
     }
 
+    #region UnityEvent
+    /// <summary>
+    /// 受伤后有一个反弹出去的力.
+    /// </summary>
+    public void GetHurt(Transform attacker)
+    {
+        // 开启人物受伤，人物就不能移动
+        isHurt = true;
+        // 先让人物停下来.
+        rb.velocity = Vector2.zero;
+        // 受伤方向确定，求X是正一(右)还是负一(左)，normalized用于将获得的数值趋近于0~1(防止数值过大).
+        Vector2 dir = new Vector2((transform.position.x - attacker.position.x), 0).normalized;
+        // 添加 -> (力的方向 * 力的大小 , 瞬间的力)
+        rb.AddForce(dir * hurtForce, ForceMode2D.Impulse);
+    }
+
+    /// <summary>
+    /// 人物死亡
+    /// </summary>
+    public void PlayerDead()
+    {
+        isDead = true;
+        // 关闭移动功能
+        inputControl.Gmaeplay.Disable();
+    }
+    #endregion
 }

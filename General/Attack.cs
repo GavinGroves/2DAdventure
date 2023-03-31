@@ -4,33 +4,13 @@ using UnityEngine;
 
 public class Attack : MonoBehaviour
 {
-    // 攻击伤害
-    private int damage;
-    // 攻击范围
-    private float accackRange;
-    // 攻击频率
-    private float accackRate;
+    public int damage;
+    public float attackRange;
+    public float attackRate;
 
-    public int Damage
+    private void OnTriggerStay2D(Collider2D other)
     {
-        get { return damage; }
-        set { damage = value; }
-    }
-
-    public float AccackRange
-    {
-        get { return accackRange; }
-        set { accackRange = value; }
-    }
-
-    public float AccackRate
-    {
-        get { return accackRate; }
-        set { accackRate = value; }
-    }
-
-    public override string ToString()
-    {
-        return string.Format("攻击伤害：{0},攻击范围：{1},攻击频率:{2}", this.damage, this.accackRange, this.accackRate);
+        // ? 用于判断：该类中是否存在这个方法.
+        other.GetComponent<Character>()?.TakeDamage(this);
     }
 }

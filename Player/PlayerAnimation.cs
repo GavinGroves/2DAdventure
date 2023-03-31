@@ -8,7 +8,6 @@ public class PlayerAnimation : MonoBehaviour
     private Rigidbody2D m_Rigidbody2d;
     private PhysicsCheck physicsCheck;
     private PlayerController playerController;
-    private PlayerManager playerManager;
 
     private void Awake()
     {
@@ -16,7 +15,6 @@ public class PlayerAnimation : MonoBehaviour
         m_Rigidbody2d = GetComponent<Rigidbody2D>();
         physicsCheck = GetComponent<PhysicsCheck>();
         playerController = GetComponent<PlayerController>();
-        playerManager = GetComponent<PlayerManager>();
     }
 
     private void Update()
@@ -33,11 +31,11 @@ public class PlayerAnimation : MonoBehaviour
         // 检测人物是否在地面上
         m_Animator.SetBool("isGround", physicsCheck.isGround);
         // 下蹲
-        m_Animator.SetBool("isCrouch", playerController.IsCrouch);
+        m_Animator.SetBool("isCrouch", playerController.isCrouch);
         // 人物死亡
-        m_Animator.SetBool("isDeath", playerManager.IsDead);
+        m_Animator.SetBool("isDeath", playerController.isDead);
         // 人物攻击
-        m_Animator.SetBool("isAttack", playerController.IsAttack);
+        m_Animator.SetBool("isAttack", playerController.isAttack);
     }
 
     public void PlayHurt()
