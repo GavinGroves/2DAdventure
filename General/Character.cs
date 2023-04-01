@@ -37,7 +37,7 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 碰到野猪获得伤害值
+    /// 被攻击获得伤害值
     /// </summary>
     public void TakeDamage(Attack attacker)
     {

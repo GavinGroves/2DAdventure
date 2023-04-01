@@ -135,11 +135,14 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void PlayerAttack(InputAction.CallbackContext obj)
     {
+        // 不在地面上，不需攻击.
+        if (!physicsCheck.isGround)
+            return;
         playerAnimation.PlayAttack();
         isAttack = true;
     }
 
-    #region UnityEvent
+    #region UnityEvent 人物受伤死亡
     /// <summary>
     /// 受伤后有一个反弹出去的力.
     /// </summary>
