@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,28 +6,32 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     Rigidbody2D rb;
-    protected Animator anim;
-    PhysicsCheck physicsCheck;
+    [HideInInspector]public Animator anim;
+    [HideInInspector]public PhysicsCheck physicsCheck;
 
-    [Header("基本参数")]
-    public float normalSpeed;//默认速度
-    public float chaseSpeed;//追击速度
-    public float currentSpeed; //当前速度
-    public Vector3 faceDir;//面朝方向
+    [Header("基本参数")] 
+    public float normalSpeed; //默认速度
+    public float chaseSpeed; //追击速度
+    [HideInInspector]public float currentSpeed; //当前速度
+    public Vector3 faceDir; //面朝方向
     public float hurtForce; //受伤朝反方向弹开的 力的增量
 
     public Transform attacker;
 
-    [Header("计时器")]
+    [Header("计时器")] 
     public float waitTime;
     public float waitTimeCount;
     public bool wait;
 
-    [Header("状态")]
+    [Header("状态")] 
     public bool isHurt;
     public bool isDead;
 
-    private void Awake()
+    private BaseState currentState;
+    protected BaseState patrolState;
+    protected BaseState chaseState;
+    
+    protected  virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
@@ -36,24 +41,32 @@ public class Enemy : MonoBehaviour
         waitTimeCount = waitTime;
     }
 
+    private void OnEnable()
+    {
+        currentState = patrolState;
+        currentState.OnEnter(this);
+    }
+
     private void Update()
     {
         // 面朝方向 从 Scale.x 实时获取
         faceDir = new Vector3(-transform.localScale.x, 0, 0);
-        // 翻转enemy
-        if (physicsCheck.touchLeftWall && faceDir.x < 0 || physicsCheck.touchRightWall && faceDir.x > 0)
-        {
-            wait = true;
-            anim.SetBool("walk", false);
-        }
-
+        
+        currentState.LogicUpdate();
+        
         TimeCount();
     }
 
     private void FixedUpdate()
     {
-        if (!isHurt & !isDead)
+        if (!isHurt & !isDead & !wait)
             Move();
+        currentState.PhysicsUpdate();
+    }
+
+    private void OnDisable()
+    {
+        currentState.OnExit();
     }
 
     public virtual void Move()

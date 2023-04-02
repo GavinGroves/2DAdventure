@@ -29,7 +29,7 @@ public class PlayerAnimation : MonoBehaviour
         // jump动画传递参数
         m_Animator.SetFloat("VelocityY", m_Rigidbody2d.velocity.y);
         // 检测人物是否在地面上
-        m_Animator.SetBool("isGround", physicsCheck.isGround); 
+        m_Animator.SetBool("isGround", physicsCheck.isGround);
         // 下蹲
         m_Animator.SetBool("isCrouch", playerController.isCrouch);
         // 人物死亡
