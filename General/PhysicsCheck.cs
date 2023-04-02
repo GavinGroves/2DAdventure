@@ -6,16 +6,14 @@ public class PhysicsCheck : MonoBehaviour
 {
     private CapsuleCollider2D coll;
 
-    [Header("检测参数")]
-    public bool manual;//true开启手动检测
-    public float checkRadius;
+    [Header("检测参数")] public bool manual; //true开启手动检测
+    public float checkRaduis;
     public Vector2 bottomOffset;
     public Vector2 leftOffset;
     public Vector2 rightOffset;
     public LayerMask groundLayer;
 
-    [Header("状态")]
-    public bool isGround;
+    [Header("状态")] public bool isGround;
     public bool touchLeftWall;
     public bool touchRightWall;
 
@@ -33,6 +31,7 @@ public class PhysicsCheck : MonoBehaviour
             leftOffset = new Vector2(-rightOffset.x, rightOffset.y);
         }
     }
+
     private void Update()
     {
         Check();
@@ -41,17 +40,31 @@ public class PhysicsCheck : MonoBehaviour
     private void Check()
     {
         // 检测地面
-        isGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, checkRadius, groundLayer);
+        // isGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, checkRaduis, groundLayer);
+        isGround = Physics2D.OverlapCircle(
+            (Vector2)transform.position + new Vector2(bottomOffset.x * transform.localScale.x, bottomOffset.y),
+            checkRaduis, groundLayer);
+
         // 墙体判断
-        touchLeftWall = Physics2D.OverlapCircle((Vector2)transform.position + leftOffset, checkRadius, groundLayer);
-        touchRightWall = Physics2D.OverlapCircle((Vector2)transform.position + rightOffset, checkRadius, groundLayer);
+        // touchLeftWall = Physics2D.OverlapCircle((Vector2)transform.position + leftOffset, checkRaduis, groundLayer);
+        // touchRightWall = Physics2D.OverlapCircle((Vector2)transform.position + rightOffset, checkRaduis, groundLayer);
+        touchLeftWall = Physics2D.OverlapCircle((Vector2)transform.position + new Vector2(leftOffset.x, leftOffset.y),
+            checkRaduis, groundLayer);
+        touchRightWall =
+            Physics2D.OverlapCircle((Vector2)transform.position + new Vector2(rightOffset.x, rightOffset.y),
+                checkRaduis, groundLayer);
     }
 
     private void OnDrawGizmosSelected()
     {
         // 绘制 虚线圆形
-        Gizmos.DrawWireSphere((Vector2)transform.position + bottomOffset, checkRadius);
-        Gizmos.DrawWireSphere((Vector2)transform.position + leftOffset, checkRadius);
-        Gizmos.DrawWireSphere((Vector2)transform.position + rightOffset, checkRadius);
+        // Gizmos.DrawWireSphere((Vector2)transform.position + bottomOffset, checkRaduis);
+        // Gizmos.DrawWireSphere((Vector2)transform.position + leftOffset, checkRaduis);
+        // Gizmos.DrawWireSphere((Vector2)transform.position + rightOffset, checkRaduis);
+        Gizmos.DrawWireSphere(
+            (Vector2)transform.position + new Vector2(bottomOffset.x * transform.localScale.x, bottomOffset.y),
+            checkRaduis);
+        Gizmos.DrawWireSphere((Vector2)transform.position + new Vector2(leftOffset.x, leftOffset.y), checkRaduis);
+        Gizmos.DrawWireSphere((Vector2)transform.position + new Vector2(rightOffset.x, rightOffset.y), checkRaduis);
     }
 }
