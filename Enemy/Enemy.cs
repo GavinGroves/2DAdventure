@@ -6,31 +6,34 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     Rigidbody2D rb;
-    [HideInInspector]public Animator anim;
-    [HideInInspector]public PhysicsCheck physicsCheck;
+    [HideInInspector] public Animator anim;
+    [HideInInspector] public PhysicsCheck physicsCheck;
 
-    [Header("基本参数")] 
-    public float normalSpeed; //默认速度
+    [Header("基本参数")] public float normalSpeed; //默认速度
     public float chaseSpeed; //追击速度
-    [HideInInspector]public float currentSpeed; //当前速度
+    [HideInInspector] public float currentSpeed; //当前速度
     public Vector3 faceDir; //面朝方向
     public float hurtForce; //受伤朝反方向弹开的 力的增量
-
     public Transform attacker;
 
-    [Header("计时器")] 
-    public float waitTime;
+    [Header("检测")] public Vector2 centerOffset;
+    public Vector2 checkSize;
+    public float checkDistance;
+    public LayerMask attackLayer;
+
+    [Header("计时器")] public float waitTime;
     public float waitTimeCount;
     public bool wait;
+    public float lostTime;
+    public float lostTimeCounter;
 
-    [Header("状态")] 
-    public bool isHurt;
+    [Header("状态")] public bool isHurt;
     public bool isDead;
 
     private BaseState currentState;
     protected BaseState patrolState;
     protected BaseState chaseState;
-    
+
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -51,9 +54,9 @@ public class Enemy : MonoBehaviour
     {
         // 面朝方向 从 Scale.x 实时获取
         faceDir = new Vector3(-transform.localScale.x, 0, 0);
-        
+
         currentState.LogicUpdate();
-        
+
         TimeCount();
     }
 
@@ -75,10 +78,11 @@ public class Enemy : MonoBehaviour
     }
 
     /// <summary>
-    /// 计时器，敌人碰到墙壁 停止一段时间 再转身
+    /// 计时器
     /// </summary>
     public void TimeCount()
     {
+        //敌人碰到墙壁 停止一段时间 再转身
         if (wait)
         {
             waitTimeCount -= Time.deltaTime;
@@ -89,7 +93,46 @@ public class Enemy : MonoBehaviour
                 transform.localScale = new Vector3(faceDir.x, 1, 1);
             }
         }
+
+        //碰到人物切换状态，丢失人物开启等待时间   
+        if (!FoundPlayer() && lostTimeCounter > 0)
+        {
+            lostTimeCounter -= Time.deltaTime;
+        }
+        else if (FoundPlayer())
+        {
+            lostTimeCounter = lostTime;
+        }
     }
+
+    /// <summary>
+    /// 检测敌人周围是否有player
+    /// </summary>
+    public bool FoundPlayer()
+    {
+        return Physics2D.BoxCast(transform.position + (Vector3)centerOffset, checkSize, 0,
+            faceDir, checkDistance, attackLayer);
+    }
+
+    /// <summary>
+    /// 切换状态
+    /// </summary>
+    /// <param name="state"></param>
+    public void SwitchState(NPCState state)
+    {
+        var newState = state switch
+        {
+            NPCState.Patrol => patrolState,
+            NPCState.Chase => chaseState,
+            _ => null
+        };
+
+        currentState.OnExit();
+        currentState = newState;
+        currentState.OnEnter(this);
+    }
+
+    #region 事件执行方法
 
     /// <summary>
     /// 获得伤害
@@ -111,7 +154,7 @@ public class Enemy : MonoBehaviour
         anim.SetTrigger("hurt");
         // 记录攻击的方向
         Vector2 dir = new Vector2(transform.position.x - attackTrans.position.x, 0).normalized;
-
+        rb.velocity = new Vector2(0, rb.velocity.y);
         StartCoroutine(OnHurt(dir));
     }
 
@@ -134,5 +177,14 @@ public class Enemy : MonoBehaviour
     public void DestroyAfterAnimation()
     {
         Destroy(this.gameObject);
+    }
+
+    #endregion
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawWireSphere(
+            transform.position + (Vector3)centerOffset + new Vector3(checkDistance * -transform.localScale.x, 0),
+            0.1f);
     }
 }
