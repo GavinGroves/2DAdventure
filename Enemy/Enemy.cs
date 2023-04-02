@@ -31,7 +31,7 @@ public class Enemy : MonoBehaviour
     protected BaseState patrolState;
     protected BaseState chaseState;
     
-    protected  virtual void Awake()
+    protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
@@ -59,9 +59,9 @@ public class Enemy : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!isHurt & !isDead & !wait)
-            Move();
         currentState.PhysicsUpdate();
+        if (!isHurt && !isDead && !wait)
+            Move();
     }
 
     private void OnDisable()

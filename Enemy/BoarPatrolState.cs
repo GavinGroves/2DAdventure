@@ -13,8 +13,9 @@ public class BoarPatrolState : BaseState
     {
         //Todo 发现Play转换到chase
         // 翻转enemy
-        if (!currentEnemy.physicsCheck.isGround || (currentEnemy.physicsCheck.touchLeftWall && currentEnemy.faceDir.x < 0 
-            || currentEnemy.physicsCheck.touchRightWall && currentEnemy.faceDir.x > 0))
+        if (!currentEnemy.physicsCheck.isGround ||
+            (currentEnemy.physicsCheck.touchLeftWall && currentEnemy.faceDir.x < 0) ||
+            (currentEnemy.physicsCheck.touchRightWall && currentEnemy.faceDir.x > 0))
         {
             currentEnemy.wait = true;
             currentEnemy.anim.SetBool("walk", false);
