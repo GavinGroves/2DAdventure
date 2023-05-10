@@ -39,6 +39,6 @@ public class BoarPatrolState : BaseState
     public override void OnExit()
     {
         currentEnemy.anim.SetBool("walk", false);
-        Debug.Log(("Exit"));
+        // Debug.Log(("Exit"));
     }
 }
