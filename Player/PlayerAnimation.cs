@@ -36,6 +36,10 @@ public class PlayerAnimation : MonoBehaviour
         m_Animator.SetBool("isDeath", playerController.isDead);
         // 人物攻击
         m_Animator.SetBool("isAttack", playerController.isAttack);
+        // 人物是否靠着墙,在墙上
+        m_Animator.SetBool("onWall",physicsCheck.onWall);
+        //滑铲
+        m_Animator.SetBool("isSlide",playerController.isSlide);
     }
 
     public void PlayHurt()

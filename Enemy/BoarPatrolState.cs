@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+/// <summary>
+/// 野猪敌人巡逻状态
+/// </summary>
 public class BoarPatrolState : BaseState
 {
     public override void OnEnter(Enemy enemy)
@@ -12,7 +11,7 @@ public class BoarPatrolState : BaseState
 
     public override void LogicUpdate()
     {
-        //Todo 发现Play转换到chase
+        //发现Play转换到chase状态
         if (currentEnemy.FoundPlayer())
         {
             currentEnemy.SwitchState((NPCState.Chase));

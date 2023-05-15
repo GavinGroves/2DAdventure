@@ -1,4 +1,7 @@
 
+/// <summary>
+/// 基础状态机
+/// </summary>
 public abstract class BaseState
 {
     protected Enemy currentEnemy;

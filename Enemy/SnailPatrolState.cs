@@ -2,40 +2,41 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 野猪敌人追击状态
-/// </summary>
-public class BoarChaseState : BaseState
+public class SnailPatrolState : BaseState
 {
     public override void OnEnter(Enemy enemy)
     {
         currentEnemy = enemy;
-        // Debug.Log("Chase");
-        currentEnemy.currentSpeed = currentEnemy.chaseSpeed;
-        currentEnemy.anim.SetBool("run", true);
+        currentEnemy.currentSpeed = currentEnemy.normalSpeed;
     }
 
     public override void LogicUpdate()
     {
-        if (currentEnemy.lostTimeCounter <= 0)
+        if (currentEnemy.FoundPlayer())
         {
-            currentEnemy.SwitchState((NPCState.Patrol));
+            currentEnemy.SwitchState((NPCState.Skill));
         }
+        // 翻转enemy
         if (!currentEnemy.physicsCheck.isGround ||
             (currentEnemy.physicsCheck.touchLeftWall && currentEnemy.faceDir.x < 0) ||
             (currentEnemy.physicsCheck.touchRightWall && currentEnemy.faceDir.x > 0))
         {
-            currentEnemy.transform.localScale = new Vector3(currentEnemy.faceDir.x, 1, 1);
+            currentEnemy.wait = true;
+            currentEnemy.anim.SetBool("walk", false);
+        }
+        else
+        {
+            currentEnemy.anim.SetBool("walk", true);
         }
     }
 
     public override void PhysicsUpdate()
     {
+        
     }
 
     public override void OnExit()
     {
-        // currentEnemy.lostTimeCounter = currentEnemy.lostTime;
-        currentEnemy.anim.SetBool("run", false);
+        
     }
 }

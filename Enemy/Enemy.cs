@@ -3,9 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(PhysicsCheck))]
 public class Enemy : MonoBehaviour
 {
-    Rigidbody2D rb;
+    [HideInInspector] public Rigidbody2D rb;
     [HideInInspector] public Animator anim;
     [HideInInspector] public PhysicsCheck physicsCheck;
 
@@ -15,8 +16,9 @@ public class Enemy : MonoBehaviour
     public Vector3 faceDir; //面朝方向
     public float hurtForce; //受伤朝反方向弹开的 力的增量
     public Transform attacker;
+    public Vector3 spwanPoint;//初始位置
 
-    [Header("检测")] public Vector2 centerOffset;
+    [Header("追击范围检测")] public Vector2 centerOffset;
     public Vector2 checkSize;
     public float checkDistance;
     public LayerMask attackLayer;
@@ -33,6 +35,7 @@ public class Enemy : MonoBehaviour
     private BaseState currentState;
     protected BaseState patrolState;
     protected BaseState chaseState;
+    protected BaseState skillState;
 
     protected virtual void Awake()
     {
@@ -41,7 +44,8 @@ public class Enemy : MonoBehaviour
         physicsCheck = GetComponent<PhysicsCheck>();
 
         currentSpeed = normalSpeed;
-        waitTimeCount = waitTime;
+        // waitTimeCount = waitTime;
+        spwanPoint = transform.position;
     }
 
     private void OnEnable()
@@ -74,7 +78,10 @@ public class Enemy : MonoBehaviour
 
     public virtual void Move()
     {
-        rb.velocity = new Vector2(currentSpeed * faceDir.x * Time.deltaTime, rb.velocity.y);
+        //蜗牛敌人的第一个动画片段不执行移动，到第二个才开始移动
+        if (!anim.GetCurrentAnimatorStateInfo(0).IsName("snail_PerMove") &&
+            !anim.GetCurrentAnimatorStateInfo(0).IsName("snail_Recover"))
+            rb.velocity = new Vector2(currentSpeed * faceDir.x * Time.deltaTime, rb.velocity.y);
     }
 
     /// <summary>
@@ -94,12 +101,12 @@ public class Enemy : MonoBehaviour
             }
         }
 
-        //碰到人物切换状态，丢失人物开启等待时间   
+        //检测到玩家切换状态，丢失玩家重置时间  
         if (!FoundPlayer() && lostTimeCounter > 0)
         {
             lostTimeCounter -= Time.deltaTime;
         }
-        else if (FoundPlayer())
+        else if (FoundPlayer()) // 添加这个额外的判断，在发现玩家的时候重置丢失时间
         {
             lostTimeCounter = lostTime;
         }
@@ -108,7 +115,7 @@ public class Enemy : MonoBehaviour
     /// <summary>
     /// 检测敌人周围是否有player
     /// </summary>
-    public bool FoundPlayer()
+    public virtual bool FoundPlayer()
     {
         return Physics2D.BoxCast(transform.position + (Vector3)centerOffset, checkSize, 0,
             faceDir, checkDistance, attackLayer);
@@ -124,6 +131,7 @@ public class Enemy : MonoBehaviour
         {
             NPCState.Patrol => patrolState,
             NPCState.Chase => chaseState,
+            NPCState.Skill => skillState,
             _ => null
         };
 
@@ -131,6 +139,12 @@ public class Enemy : MonoBehaviour
         currentState = newState;
         currentState.OnEnter(this);
     }
+
+    public virtual Vector3 GetNewPoint()
+    {
+        return transform.position;
+    }
+    
 
     #region 事件执行方法
 
@@ -176,12 +190,12 @@ public class Enemy : MonoBehaviour
     // 死亡销毁物体
     public void DestroyAfterAnimation()
     {
-        Destroy(this.gameObject);
+        Destroy(gameObject);
     }
 
     #endregion
 
-    private void OnDrawGizmosSelected()
+    public virtual void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(
             transform.position + (Vector3)centerOffset + new Vector3(checkDistance * -transform.localScale.x, 0),
